@@ -79,7 +79,7 @@
     (html5
       [:head [:title "GitHack"] (include-css "/core.css")]
       [:body {:class :main}
-        [:h1 "NetHack"]
+        [:h1 "GitHack"]
         [:h2 "GitHub + NetHack = zero-player RPG"]
         (link-to
           (url "https://github.com/login/oauth/authorize" {:client_id (app-cfg :client_id)})
