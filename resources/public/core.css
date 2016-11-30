@@ -1,0 +1,37 @@
+body {
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 16px;
+  color: #f0f0f0;
+  background: #000;
+}
+
+.main {
+  text-align: center;
+  padding-top: 150px;
+}
+
+h1 {
+  font-size: 72px;
+}
+
+a {
+  display: inline-block;
+  color: #f0f0f0;
+  text-decoration: none;
+  background-color: #55a532;
+  padding: 10px;
+  margin: 30px;
+  border-radius: 5px;
+  background-image: linear-gradient(#85d063, #4f992f);
+  border: 1px solid #5aad35;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+a:hover {
+  background-image: none;
+}
+
+.terminal {
+  border: #000 solid 5px;
+  text-align: center;
+}
