@@ -29,7 +29,7 @@ get to enjoy (and maybe even contribute to and/or learn from) your creations.
 NetHack.  Good  old  classic.  Want  to touch  the  legendary  game,  but  fear
 to  lost  in  it?  Fear  not!  With  this  service,  you  may  simply  continue
 hacking  on GitHub,  while our  specially created  [Tactical Amulet  Extraction
-Bot][bothack]<sup>tm</sup> (thanks, @krajj7!) will do the rest.
+Bot][bothack]<sup>tm</sup> (thanks, [@krajj7][]!) will do the rest.
 
 Each your action on GitHub - it is one more turn within NetHack. Just open your
 page from time to time: maybe, you've already taken Amulet of Yendor?
@@ -45,3 +45,4 @@ with it!
 
 [githack]: http://githack.com/
 [bothack]: https://github.com/krajj7/BotHack
+[@krajj7]: https://github.com/krajj7/
