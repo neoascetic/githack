@@ -20,9 +20,9 @@
             [githack.bothack :as bh])
   (:gen-class))
 
-(def users (atom #{}))
+(def users (atom {}))
 (def events-pool (at/mk-pool))
-(def def-user {:turns 1 :password "pass" :flags 0 :env ""})
+(def def-user {:turns 1 :flags 0 :env ""})
 (def app-cfg (load-string (slurp "config.edn")))
 (def db {:classname "org.sqlite.JDBC"
          :subname (app-cfg :db-path)
@@ -36,32 +36,33 @@
   (-> (query db ["SELECT turns FROM dglusers WHERE username = ? AND turns > 0" name])
       first :turns))
 
-(defn watch-user! [name]
-  (let [[count meta] (gh/events-count name (saved-meta name))]
+(defn watch-user! [name token]
+  (let [[count meta] (gh/events-count name token (saved-meta name))]
     (execute!
       db
       ["UPDATE dglusers SET turns = turns + ?, meta = ? WHERE username = ?"
        count (pr-str meta) name])
-    (at/after (* 1000 (:poll-interval meta 60)) #(watch-user! name) events-pool)))
+    (at/after (* 1000 (:poll-interval meta 60)) #(watch-user! name token) events-pool)))
 
-(defn play-user! [name]
+(defn play-user! [name pass]
   (when-let [turns (available-turns name)]
-    (when-let [passed (bh/do-turns! name (min turns 100))]
+    (when-let [passed (bh/do-turns! name pass (min turns 100))]
       (execute! db ["UPDATE dglusers SET turns = turns - ? WHERE username = ?" passed name]))))
 
 (defn user-exists? [name]
   (not (empty? (query db ["SELECT * FROM dglusers WHERE username = ?" name]))))
 
 (defn create-user! [name token]
-  (when-not (user-exists? name)
-    (insert! db :dglusers (assoc def-user
-                                :username name
-                                :email (str name "@githack.com")
-                                :meta (pr-str {:oauth-token token})))
-    (future
-      (play-user! name)
-      (swap! users conj name))
-    (future (watch-user! name))))
+  (if (user-exists? name)
+    (update! db :dglusers {:password token} ["username = ?" name])
+    (do
+      (future (watch-user! name token))
+      (insert! db :dglusers (assoc def-user
+                                   :username name :password token
+                                   :email (str name "@githack.com")))))
+  (future
+    (play-user! name token)
+    (swap! users assoc name token)))
 
 (defn code->token [code]
   (let [res (http/post
@@ -126,8 +127,15 @@
       (wrap-content-type "text/html")
       (wrap-not-modified)))
 
+(defn user->pass []
+  (apply
+    hash-map
+    (->> (query db "SELECT username, password FROM dglusers" :as-arrays? true)
+         (drop 1)
+         (flatten))))
+
 (defn -main [& args]
-  (reset! users (set (query db "SELECT username FROM dglusers" :row-fn :username)))
+  (reset! users (user->pass))
   (future (doall (map watch-user! @users)))
-  (future (while true (doall (map play-user! @users))))
+  (future (while true (doall (map (partial apply play-user!) @users))))
   (jetty/run-jetty app {:port 80}))

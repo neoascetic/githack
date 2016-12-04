@@ -7,7 +7,7 @@
         id (:id fst)]
     (merge rmeta (meta fst) (when id {:id id}))))
 
-(defn events-seq [name opts]
+(defn- events-seq [name opts]
   (let [exec-request
     (fn exec-request [page]
       (let [res (events/performed-events name (assoc opts :page page))]
@@ -19,12 +19,17 @@
           (throw (ex-info "Something wrong with the API" {:response res})))))]
       (exec-request 1)))
 
+(defn- build-opts [token meta]
+  (-> meta
+      (s/rename-keys {:last-modified :if-modified-since})
+      (assoc :oauth-token token)))
+
 (defn events-count
-  "Takes username and previous request meta information.
+  "Takes username, token and previous request meta information.
   Returns number of events occured and request meta information as a vector."
-  [name meta]
+  [name token meta]
   (try
-     (let [opts (s/rename-keys meta {:last-modified :if-modified-since})
+     (let [opts (build-opts token meta)
            events (events-seq name opts)]
       [(count (take-while #(not= (:id meta) (% :id)) events))
        (res->meta events meta)])

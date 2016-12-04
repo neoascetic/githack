@@ -7,7 +7,7 @@
 
 (def ^:private cfg {:bot "bothack.bots.mainbot" :menubot "bothack.bots.dgl-menu"
                     :interface :telnet :host "localhost" :port 23
-                    :dgl-pass "pass" :dgl-game "p"})
+                    :dgl-game "p"})
 
 (defn- turns-passed [game]
   (- (:turn game) (:initial-turn game (:turn game))))
@@ -67,10 +67,10 @@
   "Attempts to make `n` turns in the game for player `name`.
   Returns the number of turns passed, which may be greater than `n`
   (because of sleeps, autotravel, etc)."
-  [name n]
+  [name pass n]
   (with-redefs [bothack.bothack/load-config identity]
     (let [turns-num (promise)]
-      (-> (new-bh (assoc cfg :dgl-login name :promise turns-num))
+      (-> (new-bh (assoc cfg :dgl-login name :dgl-pass pass :promise turns-num))
           (save-after n)
           game-stopped
           quit-when-stuck
