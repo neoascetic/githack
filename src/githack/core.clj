@@ -136,6 +136,6 @@
 
 (defn -main [& args]
   (reset! users (user->pass))
-  (future (doall (map watch-user! @users)))
+  (future (doall (map (partial apply watch-user!) @users)))
   (future (while true (doall (map (partial apply play-user!) @users))))
   (jetty/run-jetty app {:port 80}))
