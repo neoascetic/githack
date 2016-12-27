@@ -1,0 +1,9 @@
+service telnet {
+  socket_type = stream
+  protocol    = tcp
+  user        = root
+  wait        = no
+  server      = /usr/sbin/in.telnetd
+  server_args = -L /opt/nethack/nethack.alt.org/dgamelaunch
+  rlimit_cpu  = 120
+}
