@@ -11,6 +11,7 @@ RUN git clone git://github.com/paxed/dgamelaunch.git && cd dgamelaunch && \
     sed -i -e "s/-lrt/-lrt -pthread/" configure.ac && \
     ./autogen.sh --enable-sqlite --enable-shmem --with-config-file=/opt/nethack/nethack.alt.org/etc/dgamelaunch.conf && \
     make && ./dgl-create-chroot && \
+    sed -i -e 's/^\(\s*r).*\)$/\1 (disabled)/' /opt/nethack/nethack.alt.org/dgl_menu_main_anon.txt && \
     cd .. && rm -rf dgamelaunch
 
 RUN git clone http://alt.org/nethack/nh343-nao.git && cd nh343-nao && \
