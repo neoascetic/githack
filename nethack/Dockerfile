@@ -30,6 +30,6 @@ COPY bothack.nh343rc /opt/nethack/nethack.alt.org/dgl-default-rcfile.nh343
 COPY dgamelaunch.conf /opt/nethack/nethack.alt.org/etc/
 COPY dgamelaunch.xinetd /etc/xinetd.d/dgamelaunch
 
-VOLUME /opt/nethack/nethack.alt.org/dgldir
+VOLUME ["/opt/nethack/nethack.alt.org/dgldir", "/opt/nethack/nethack.alt.org/nh343/var"]
 EXPOSE 23
 CMD ["xinetd", "-dontfork"]
