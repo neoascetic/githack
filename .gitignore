@@ -1,4 +1,5 @@
 config.edn
+dgldir
 
 /target
 /classes

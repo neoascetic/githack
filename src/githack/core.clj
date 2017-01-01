@@ -25,7 +25,7 @@
 (def def-user {:turns 1 :flags 0 :env ""})
 (def app-cfg (load-string (slurp "config.edn")))
 (def db {:classname "org.sqlite.JDBC"
-         :subname (app-cfg :db-path)
+         :subname "dgldir/dgamelaunch.db"
          :subprotocol "sqlite"})
 
 (defn- saved-meta [name]
@@ -72,8 +72,9 @@
 
 
 (defn- latest-rec [name]
-  (if-let [file (-> (io/file (app-cfg :userdata-dir) name "ttyrec") .list sort last)]
-    (str "/" name "/ttyrec/" file)))
+  (let [dir (str "dgldir/userdata/" (first name) "/" name)]
+    (if-let [file (-> (io/file dir "ttyrec") .list sort last)]
+        (str "/" (first name) "/" name "/ttyrec/" file))))
 
 (defn handle-index []
   (response
@@ -123,7 +124,7 @@
   (-> handler
       (wrap-params)
       (wrap-resource "public")
-      (wrap-file (app-cfg :userdata-dir))
+      (wrap-file "dgldir/userdata")
       (wrap-content-type "text/html")
       (wrap-not-modified)))
 
@@ -138,4 +139,4 @@
   (reset! users (user->pass))
   (future (doall (map (partial apply watch-user!) @users)))
   (future (while true (doall (map (partial apply play-user!) @users))))
-  (jetty/run-jetty app {:port 80}))
+  (jetty/run-jetty app {:port (app-cfg :port)}))
