@@ -79,7 +79,7 @@
 
 
 (defn- latest-rec [name]
-  (let [dir (dgl (str (first name) "/" name))]
+  (let [dir (dgl (str "userdata/" (first name) "/" name))]
     (if-let [file (-> (io/file dir "ttyrec") .list sort last)]
         (str "/" (first name) "/" name "/ttyrec/" file))))
 
