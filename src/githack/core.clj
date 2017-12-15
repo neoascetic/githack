@@ -20,12 +20,19 @@
             [githack.bothack :as bh])
   (:gen-class))
 
+;; asserts?
+(def app-cfg {:client_id (System/getenv "GITHUB_CLIENT_ID")
+              :client_secret (System/getenv "GITHUB_CLIENT_SECRET")
+              :port (int (or (System/getenv "PORT") 8000))})
+
+(defn dgl [path]
+  (str "/opt/nethack/nethack.alt.org/dgldir/" path))
+
 (def users (atom {}))
 (def events-pool (at/mk-pool))
 (def def-user {:turns 1 :flags 0 :env ""})
-(def app-cfg (load-string (slurp "config.edn")))
 (def db {:classname "org.sqlite.JDBC"
-         :subname "dgldir/dgamelaunch.db"
+         :subname (dgl "dgamelaunch.db")
          :subprotocol "sqlite"})
 
 (defn- saved-meta [name]
@@ -72,7 +79,7 @@
 
 
 (defn- latest-rec [name]
-  (let [dir (str "dgldir/userdata/" (first name) "/" name)]
+  (let [dir (dgl (str (first name) "/" name))]
     (if-let [file (-> (io/file dir "ttyrec") .list sort last)]
         (str "/" (first name) "/" name "/ttyrec/" file))))
 
@@ -120,11 +127,11 @@
       (handle-user (request :uri)))
     "text/html"))
 
-(def app
+(defn app []
   (-> handler
       (wrap-params)
       (wrap-resource "public")
-      (wrap-file "dgldir/userdata")
+      (wrap-file (dgl "userdata"))
       (wrap-content-type "text/html")
       (wrap-not-modified)))
 
@@ -139,4 +146,4 @@
   (reset! users (user->pass))
   (future (doall (map (partial apply watch-user!) @users)))
   (future (while true (doall (map (partial apply play-user!) @users))))
-  (jetty/run-jetty app {:port (app-cfg :port)}))
+  (jetty/run-jetty (app) {:port (app-cfg :port)}))
