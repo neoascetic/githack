@@ -2,27 +2,33 @@ FROM clojure:lein-alpine-onbuild as builder
 RUN mv "$(lein uberjar | sed -n 's/^Created \(.*standalone\.jar\)/\1/p')" githack.jar
 
 FROM debian:wheezy
+
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    bison flex gcc groff git bsdmainutils make autotools-dev automake autoconf \
+    bison flex gcc groff bsdmainutils make autotools-dev automake autoconf \
     libncursesw5-dev ncurses-dev libsqlite3-dev sqlite3 \
     update-inetd telnetd xinetd locales ca-certificates default-jre && \
     locale-gen en_US.UTF-8
 
-RUN git clone git://github.com/paxed/dgamelaunch.git && cd dgamelaunch && \
+ADD https://github.com/paxed/dgamelaunch/archive/master.tar.gz /dgamelaunch/
+RUN cd /dgamelaunch/ && tar xf master.tar.gz --strip-component=1 && \
     sed -i -e "s/-lrt/-lrt -pthread/" configure.ac && \
     ./autogen.sh --enable-sqlite --enable-shmem --with-config-file=/opt/nethack/nethack.alt.org/etc/dgamelaunch.conf && \
     make && ./dgl-create-chroot && \
     sed -i -e 's/^\(\s*r).*\)$/\1 (disabled)/' /opt/nethack/nethack.alt.org/dgl_menu_main_anon.txt && \
-    cd .. && rm -rf dgamelaunch
+    cd / && rm -rf /dgamelaunch && \
+    sqlite3 /opt/nethack/nethack.alt.org/dgldir/dgamelaunch.db \
+            'alter table dglusers add turns integer default 0; alter table dglusers add meta text;' && \
+    chmod 0666 /opt/nethack/nethack.alt.org/dgldir/dgamelaunch.db
 
-RUN git clone http://alt.org/nethack/nh343-nao.git && cd nh343-nao && \
+ADD https://github.com/neoascetic/nh343-nao/archive/master.tar.gz /nh343-nao/
+RUN cd /nh343-nao/ && tar xf master.tar.gz --strip-component=1 && \
     sed -i -e "/^CFLAGS/s/-O/-O2 -fomit-frame-pointer/" sys/unix/Makefile.src && \
     sed -i -e "/^CFLAGS/s/-O/-O2 -fomit-frame-pointer/" sys/unix/Makefile.utl && \
     sed -i -e "/rmdir \.\/-p/d" sys/unix/Makefile.top && \
     make all && make install && \
     cp /lib/x86_64-linux-gnu/libncurses* /opt/nethack/nethack.alt.org/lib/x86_64-linux-gnu/ && \
-    cd .. && rm -rf nh343-nao
+    cd / && rm -rf /nh343-nao/
 
 RUN apt-get remove --auto-remove --purge -y \
     bison flex gcc groff git bsdmainutils make autotools-dev automake autoconf && \
