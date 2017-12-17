@@ -10,7 +10,7 @@ OPTIONS=lit_corridor
 OPTIONS=msg_wall_hits
 
 OPTIONS=!sparkle
-OPTIONS=runmode:teleport
+OPTIONS=runmode:walk
 OPTIONS=!timed_delay
 
 # display
